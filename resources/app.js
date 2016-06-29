@@ -1,20 +1,35 @@
 var sql = require('sql.js');
 var fs = require('fs');
 $ = jQuery = require("jquery");
-
-var filebuffer = fs.readFileSync('resources/libreta.sqlite');
-var db = new database(filebuffer);
+var fileDB = "resources/libreta.sqlite";
+var db
+try {
+  var filebuffer = fs.readFileSync(fileDB);
+  db = new database(filebuffer);
+}catch (e) {
+  db = new database(new sql.Database());
+  db.writeDB("CREATE TABLE libreta (id_libreta integer NOT NULL PRIMARY KEY AUTOINCREMENT, titulo	text, contenido	text NOT NULL, created_at	text, update_at	text, delete_at	text);");
+}
 var form = new LibretaForm();
-
+var footer = new Footer();
+footer.draw();
 getNotas();
-form.draw(function () {
-    if (form.idlibreta === null) {
-        db.writeDB("INSERT INTO libreta(titulo, contenido, created_at) VALUES ('" + form.titulo.html() + "', '" + form.contenido.val() + "', (datetime('now','localtime')))");
-    } else {
-        db.writeDB("UPDATE libreta set titulo = '" + form.titulo.html() + "', contenido = '" + form.contenido.val() + "', update_at = (datetime('now','localtime')) where id_libreta = '" + form.idlibreta + "'");
-    }
-    getNotas();
-    toogleView();
+
+var saveLibreta = function(){
+  if (form.idlibreta === null) {
+      db.writeDB("INSERT INTO libreta(titulo, contenido, created_at) VALUES ('" + form.titulo.html() + "', '" + form.contenido.val() + "', (datetime('now','localtime')))");
+  } else {
+      db.writeDB("UPDATE libreta set titulo = '" + form.titulo.html() + "', contenido = '" + form.contenido.val() + "', update_at = (datetime('now','localtime')) where id_libreta = '" + form.idlibreta + "'");
+  }
+  getNotas();
+  toogleView("main");
+}
+
+form.draw(saveLibreta);
+
+$("#btnNew").click(function(){
+    toogleView("formNota");
+    form.clear();
 });
 
 
@@ -26,7 +41,7 @@ function database(filebuffer) {
         var res = this.db.exec(query);
         var data = this.db.export();
         var buffer = new Buffer(data);
-        fs.writeFileSync("resources/libreta.sqlite", buffer);
+        fs.writeFileSync(fileDB, buffer);
         return res;
     };
 
@@ -37,48 +52,22 @@ function database(filebuffer) {
 
 
 function LibretaForm() {
+  this.contenedor = null;
     this.idlibreta = null;
     this.titulo = null;
     this.contenido = null;
-    this.draw = function (onSave) {
-        var div1 = createNode("div", "titulo nuevaNotaContainer");
-        var div2 = createNode("div", "container-fluid nuevaNotaContainer");
-        var div3 = createNode("div", "modal-body");
-        var div4 = createNode("div", "lines");
-        var div5 = createNode("div", "modal-footer footer nuevaNotaContainer");
-        this.contenido = createNode("textarea", false);
-        this.titulo = createNode("h4", "modal-title");
-        var buttonClose1 = createNode("button", "close");
-        var buttonClose2 = createNode("button", "btn btn-secondary");
-        var buttonGuardar = createNode("button", "btn btn-primary");
-        buttonClose1.attr("type", "button");
-        buttonClose1.append(createNode("span", false).html("&times"));
-        buttonClose1.click(function () {
-            toogleView();
-        });
-        buttonClose2.attr("type", "button");
-        buttonClose2.html("Cerrar");
-        buttonClose2.click(function () {
-            toogleView();
-        });
-        buttonGuardar.attr("type", "button");
-        buttonGuardar.html("Guardar");
-        buttonGuardar.click(function () {
-            onSave();
-        });
-        this.contenido.attr("id", "contenido");
-        this.titulo.attr("contenteditable", "true");
-        div3.append(div4);
-        div3.append(this.contenido);
-        div2.append(div3);
-        div1.append(buttonClose1);
-        div1.append(this.titulo);
-        div5.append(buttonClose2);
-        div5.append(buttonGuardar);
-        this.titulo.html("Nuevo");
-        $("body").append(div1);
-        $("body").append(div2);
-        $("body").append(div5);
+    this.lines = null
+    this.draw = function () {
+      this.contenedor = $("#formNota");
+      this.contenido = createNode("textarea", false);
+      this.titulo = createNode("h4", "titulo");
+      this.lines = createNode("div", "lines");
+      this.contenido.attr("id", "contenido");
+      this.titulo.attr("contenteditable", "true");
+      this.titulo.html("Nuevo");
+      this.contenedor.append(this.titulo);
+      this.contenedor.append(this.lines);
+      this.contenedor.append(this.contenido);
     };
 
     this.load = function (id) {
@@ -87,7 +76,7 @@ function LibretaForm() {
         var res = db.readDB("SELECT * FROM libreta where id_libreta = '" + this.idlibreta + "'");
         this.titulo.html(res[0].values[0][1]);
         this.contenido.val(res[0].values[0][2]);
-        toogleView();
+        toogleView("formNota");
     };
 
     this.clear = function () {
@@ -101,14 +90,16 @@ function LibretaForm() {
 function getNotas() {
     $("#notas").html("");
     var res = db.readDB("SELECT * FROM (SELECT id_libreta, substr(titulo,0,12), substr(contenido, 0,23), created_at, update_at FROM libreta ORDER BY created_at DESC) ORDER BY update_at DESC");
-    $.each(res[0].values, function (iii, nnn) {
-        $("#notas").append(libretaCard(nnn));
-    });
+    if(res[0]){
+      $.each(res[0].values, function (iii, nnn) {
+          $("#notas").append(libretaCard(nnn));
+      });
+    }
 }
 
 //Generar html de cada "nota" que se crea
 function libretaCard(libreta) {
-    var divRow = createNode("div", "col-sm-4");
+    var divRow = createNode("div", "col-xs-6 col-sm-4 col-md-4");
     var contenedorPrimary = createNode("div", "card");
     var contenedor = createNode("div", "card-block");
     var titulo = createNode("h4", "card-title");
@@ -137,6 +128,36 @@ function libretaCard(libreta) {
     return divRow;
 }
 
+function Footer(){
+  var footer = null;
+  var titulo = null;
+  var toolbarFooter = null;
+  var btnCancel = null;
+  var btnSave = null;
+
+  this.draw = function(){
+    this.footer = createNode("footer", "toolbar toolbar-footer");
+    this.titulo = createNode("h1", "title");
+    this.toolbarFooter = createNode("div", "toolbar-actions");
+    this.btnCancel = createNode("button", "btn btn-default");
+    this.btnSave = createNode("button", "btn btn-primary pull-right");
+    this.toolbarFooter.append(this.btnCancel);
+    this.toolbarFooter.append(this.btnSave);
+    this.footer.append(this.titulo);
+    this.footer.append(this.toolbarFooter);
+    this.btnCancel.html("Cerrar");
+    this.btnSave.html("Guardar");
+    this.titulo.html("Libreta de notas")
+    this.btnCancel.click(function(){
+      toogleView("main");
+    });
+    this.btnSave.click(function(){
+      saveLibreta();
+    });
+    $("body .window").append(this.footer);
+  };
+}
+
 //Utilidad para generar html
 function createNode(etiqueta, Etclass) {
     var node = $("<" + etiqueta + "></" + etiqueta + ">");
@@ -147,21 +168,24 @@ function createNode(etiqueta, Etclass) {
 }
 
 //SPA, cambiar de vistas
-var b = true;
-function toogleView() {
-    if (b) {
-        $(".mainContainer").show();
-        $(".nuevaNotaContainer").hide();
-        b = false;
-    } else {
-        $(".mainContainer").hide();
-        $(".nuevaNotaContainer").show();
-        $(window).trigger('resize');
-        b = true;
+function toogleView(vista) {
+    if (vista == "main") {
+      footer.titulo.show();
+      footer.toolbarFooter.hide();
+      form.contenedor.hide();
+      $("#main").show();
+      return;
+    }
+    if(vista == "formNota"){
+      footer.titulo.hide();
+      footer.toolbarFooter.show();
+      form.contenedor.show();
+      $("#main").hide();
+      return;
     }
 }
 
-toogleView();
+toogleView("main");
 
 //Evento cuando se borra un elemento
 (function ($) {
@@ -178,14 +202,17 @@ toogleView();
 //"Resposive"
 $(window).on('resize', function () {
     var win = $(this);
-    var viewportWidth = win.width() - 135;
-    var viewportHeight = win.height() - 165;
+    var viewportWidth = win.width();
+    var viewportHeight = win.height();
     if (viewportHeight > 0) {
-        $('#contenido').width(viewportWidth);
-        $('#contenido').height(viewportHeight);
-        $(".lines").height(viewportHeight);
+      form.titulo.width(viewportWidth - 4);
+      form.contenido.width(viewportWidth - 60);
+      form.contenido.height(viewportHeight - 136);
+      form.lines.height(viewportHeight - 130);
+      $("#notas").height(viewportHeight-63);
     }
 });
+$(window).trigger('resize');
 
 function timeSince(date) {
     var seconds = Math.floor((new Date() - date) / 1000);

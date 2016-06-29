@@ -2,36 +2,32 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>Libreta 0.0.1</title>
-        <link rel="stylesheet" href="resources/bootstrap.min.css">
+        <title>Libreta 0.1.0</title>
+        <link rel="stylesheet" href="resources/bootstrap.gridSystem.min.css">
+        <link rel="stylesheet" href="resources/photon.min.css">
         <link rel="stylesheet" href="resources/styles.css">
+        <!--<script src="resources/menu.js" charset="utf-8"></script>-->
     </head>
     <body>
-      <!--mainContainer-->
-      <div class="container-fluid mainContainer">
-        <div class="page-header m-t-1">
-          <h1>Hola.</h1>
-        </div>
-        <hr>
-        <p class="lead"><a class="btn btn-info" onclick="toogleView(); form.clear()">Nueva nota</a></p>
-        <div>
-          <!--Start-->
-          <div class="row" id="notas">
+      <div class="window">
+        <div id="main">
+            <button class="btn btn-large btn-default" id="btnNew">Nueva nota</button>
+            <!--Start-->
+            <div class="container-fluid">
+              <div class="row" id="notas">
 
+              </div>
           </div>
-          <!--End-->
+            <!--End-->
+        </div>
+        <div class="window-content">
+          <div class="pane-group">
+            <div id="formNota">
+
+            </div>
+          </div>
         </div>
       </div>
-
-      <footer class="footer mainContainer">
-        <div class="container">
-          <p class="text-muted">Libreta de notas</p>
-        </div>
-      </footer>
-
-      <!--/mainContainer-->
-      <script type="text/javascript" src="resources/tether.min.js"></script>
-      <script type="text/javascript" src="resources/bootstrap.min.js"></script>
       <script type="text/javascript" src="resources/app.js"></script>
     </body>
 </html>
