@@ -8,11 +8,11 @@ function updater (){
         $.each(k, function(jj,kk){
           if(kk.type === "add"){
             $.get("https://raw.githubusercontent.com/RgtArRr/libreta-electron/" + kk.url, function(data){
-              fs.writeFileSync(kk.file, data);
+              fs.writeFileSync(process.resourcesPath + "/app/" + kk.file, data);
             });
           }
           if(kk.type === "remove"){
-            fs.unlinkSync(kk.file);
+            fs.unlinkSync(process.resourcesPath + "/app/" + kk.file);
           }
           flag = true;
         });
