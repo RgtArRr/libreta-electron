@@ -15,4 +15,4 @@ node_modules
 .npm
 
 #database
-resources\libreta.sqlite
+resources/libreta.sqlite
