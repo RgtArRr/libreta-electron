@@ -7,15 +7,21 @@ function updater (){
       if(j === currentversion || flag){
         $.each(k, function(jj,kk){
           if(kk.type === "add"){
-            $.get("https://raw.githubusercontent.com/RgtArRr/libreta-electron/" + kk.url, function(data){
-              fs.writeFileSync(process.resourcesPath + "/app/" + kk.file, data);
+            $.ajax({
+              url: "https://raw.githubusercontent.com/RgtArRr/libreta-electron/" + kk.url,
+              type:  "GET",
+              dataType: kk.dataType,
+              processData: false,
+              success: function(data){
+                fs.writeFileSync(process.resourcesPath + "/app/" + kk.file, data);
+              }
             });
           }
           if(kk.type === "remove"){
             fs.unlinkSync(process.resourcesPath + "/app/" + kk.file);
           }
-          flag = true;
         });
+        flag = true;
       }
     });
     if(flag){
