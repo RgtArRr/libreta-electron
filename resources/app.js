@@ -152,7 +152,11 @@ function Footer(){
       toogleView("main");
     });
     this.btnSave.click(function(){
-      saveLibreta();
+      if ($.trim(form.contenido.val()).length < 1) {
+        alert("Es necesario ingresar el contenido.");
+      }else{
+        saveLibreta();
+      }
     });
     $("body .window").append(this.footer);
   };
