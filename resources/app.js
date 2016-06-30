@@ -17,7 +17,7 @@ getNotas();
 
 var saveLibreta = function(){
   if (form.idlibreta === null) {
-      db.writeDB("INSERT INTO libreta(titulo, contenido, created_at) VALUES ('" + form.titulo.html() + "', '" + form.contenido.val() + "', (datetime('now','localtime')))");
+      db.writeDB("INSERT INTO libreta(titulo, contenido, created_at, update_at) VALUES ('" + form.titulo.html() + "', '" + form.contenido.val() + "', datetime('now','localtime'), datetime('now','localtime'))");
   } else {
       db.writeDB("UPDATE libreta set titulo = '" + form.titulo.html() + "', contenido = '" + form.contenido.val() + "', update_at = (datetime('now','localtime')) where id_libreta = '" + form.idlibreta + "'");
   }
@@ -89,7 +89,7 @@ function LibretaForm() {
 //Obtener todas las notas
 function getNotas() {
     $("#notas").html("");
-    var res = db.readDB("SELECT * FROM (SELECT id_libreta, substr(titulo,0,12), substr(contenido, 0,23), created_at, update_at FROM libreta ORDER BY created_at DESC) ORDER BY update_at DESC");
+    var res = db.readDB("SELECT id_libreta, substr(titulo,0,12), substr(contenido, 0,23), created_at, update_at FROM libreta ORDER BY update_at DESC");
     if(res[0]){
       $.each(res[0].values, function (iii, nnn) {
           $("#notas").append(libretaCard(nnn));
@@ -119,7 +119,7 @@ function libretaCard(libreta) {
     });
     divRow.append(contenedorPrimary);
     var idInterval = setNewInterval(function () {
-        timestampText.html(timeSince(new Date(((libreta[4] === null) ? libreta[3] : libreta[4]))));
+        timestampText.html(timeSince(new Date(libreta[4])));
     }, 3000);
 
     divRow.on('destroyed', function (e) {
