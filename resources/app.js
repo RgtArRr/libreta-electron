@@ -32,6 +32,10 @@ $("#btnNew").click(function(){
   form.clear();
 });
 
+$("#quit").click(function(){
+  window.close();
+});
+
 
 //Utilidad para leer y escribir en la bd.
 function database(filebuffer) {
@@ -106,17 +110,32 @@ function libretaCard(libreta) {
   var contenido = createNode("div", "card-text");
   var timestampText = createNode("small", "text-muted");
   var timestamp = createNode("div", "card-text");
+  var buttonRemove = createNode("div", "options").append(createNode("span", "icon icon-trash"));
   timestamp.append(timestampText);
   contenedor.append(titulo);
   contenedor.append(createNode("hr", false));
   contenedor.append(contenido);
   contenedor.append(timestamp);
   contenedorPrimary.append(contenedor);
+  contenedorPrimary.append(buttonRemove);
   titulo.html(libreta[1] + ((libreta[1].length === 11) ? "..." : ""));
   contenido.html(libreta[2] + ((libreta[2].length === 22) ? "..." : ""));
   contenedor.click(function () {
     form.load(libreta[0]);
   });
+  buttonRemove.hide();
+  buttonRemove.click(function(){
+    db.writeDB("DELETE FROM libreta WHERE id_libreta = '" + libreta[0] + "'");
+    divRow.remove();
+  });
+  divRow.hover(
+    function () {
+      buttonRemove.show();
+    },
+    function () {
+      buttonRemove.hide();
+    }
+  );
   divRow.append(contenedorPrimary);
   var idInterval = setNewInterval(function () {
     timestampText.html(timeSince(new Date(libreta[4])));

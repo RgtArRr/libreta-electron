@@ -38,6 +38,20 @@ textarea {
   overflow-y: auto;
 }
 
+.options{
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 18px;
+}
+
+#quit{
+  position: absolute;
+  top: -5px;
+  right: 5px;
+  font-size: 24px;
+}
+
 /*Bootstrap v4-alpha card css*/
 .card{position:relative;display:block;margin-bottom:.75rem;background-color:#fff;border:1px solid #e5e5e5;border-radius:.25rem}
 .card-block{padding:1.25rem}
