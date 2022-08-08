@@ -8,7 +8,7 @@
     "start": "electron ."
   },
   "dependencies": {
-    "jquery": "^2.1.4",
+    "jquery": "^3.0.0",
     "sql.js": "^0.3.2"
   },
   "devDependencies": {
